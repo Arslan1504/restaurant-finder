@@ -1,0 +1,23 @@
+{
+  "name": "restaurant-finder",
+  "version": "1.0.0",
+  "description": "Restaurant finder using Google Places API",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "nodemon server.js"
+  },
+  "keywords": [
+    "restaurant",
+    "google-places",
+    "search"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "axios": "^1.13.2",
+    "cors": "^2.8.5",
+    "dotenv": "^16.6.1",
+    "express": "^4.22.1"
+  }
+}

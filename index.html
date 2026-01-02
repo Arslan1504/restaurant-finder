@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Restaurant Finder</title>
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 40px;
+        }
+
+        .header h1 {
+            font-size: 3rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+
+        .search-box {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            margin-bottom: 40px;
+        }
+
+        .search-input-wrapper {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .search-input {
+            flex: 1;
+            padding: 15px 20px;
+            font-size: 1.1rem;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        .search-input:focus {
+            border-color: #667eea;
+        }
+
+        .search-button {
+            padding: 15px 40px;
+            font-size: 1.1rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .search-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .search-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .loading {
+            text-align: center;
+            color: white;
+            font-size: 1.5rem;
+            padding: 40px;
+        }
+
+        .spinner {
+            border: 4px solid rgba(255,255,255,0.3);
+            border-top: 4px solid white;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .results {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 25px;
+        }
+
+        .restaurant-card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .restaurant-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .restaurant-name {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 15px;
+        }
+
+        .info-row {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 12px;
+            font-size: 0.95rem;
+        }
+
+        .info-label {
+            font-weight: 600;
+            color: #667eea;
+            min-width: 80px;
+        }
+
+        .info-value {
+            color: #555;
+            word-break: break-word;
+        }
+
+        .rating-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .stars {
+            color: #ffa500;
+            font-size: 1.2rem;
+        }
+
+        .rating-count {
+            color: #999;
+            font-size: 0.85rem;
+        }
+
+        .website-link {
+            color: #667eea;
+            text-decoration: none;
+            word-break: break-all;
+        }
+
+        .website-link:hover {
+            text-decoration: underline;
+        }
+
+        .reviews-section {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #e0e0e0;
+        }
+
+        .reviews-title {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 1.1rem;
+        }
+
+        .review-item {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 12px;
+        }
+
+        .review-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .review-author {
+            font-weight: 600;
+            color: #333;
+        }
+
+        .review-rating {
+            color: #ffa500;
+        }
+
+        .review-text {
+            color: #666;
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+
+        .review-time {
+            color: #999;
+            font-size: 0.8rem;
+            margin-top: 5px;
+        }
+
+        .open-status {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .open-status.open {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .open-status.closed {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .no-results {
+            text-align: center;
+            color: white;
+            font-size: 1.3rem;
+            padding: 60px 20px;
+        }
+
+        .error-message {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState } = React;
+
+        function RestaurantFinder() {
+            const [query, setQuery] = useState('');
+            const [restaurants, setRestaurants] = useState([]);
+            const [loading, setLoading] = useState(false);
+            const [error, setError] = useState('');
+
+            const searchRestaurants = async () => {
+                if (!query.trim()) {
+                    setError('Please enter a search query');
+                    return;
+                }
+
+                setLoading(true);
+                setError('');
+                setRestaurants([]);
+
+                try {
+                    const response = await fetch(
+                        `http://localhost:3001/api/search?query=${encodeURIComponent(query)}`
+                    );
+                    
+                    if (!response.ok) {
+                        throw new Error('Failed to fetch restaurants');
+                    }
+
+                    const data = await response.json();
+                    setRestaurants(data.places || []);
+                    
+                    if (data.places.length === 0) {
+                        setError('No restaurants found. Try a different search term.');
+                    }
+                } catch (err) {
+                    setError('Failed to search. Make sure the backend server is running and Google API key is configured.');
+                    console.error(err);
+                } finally {
+                    setLoading(false);
+                }
+            };
+
+            const handleKeyPress = (e) => {
+                if (e.key === 'Enter') {
+                    searchRestaurants();
+                }
+            };
+
+            const renderStars = (rating) => {
+                if (rating === 'N/A') return rating;
+                const fullStars = Math.floor(rating);
+                const hasHalfStar = rating % 1 >= 0.5;
+                
+                return (
+                    <>
+                        {'★'.repeat(fullStars)}
+                        {hasHalfStar && '☆'}
+                        {' '}{rating}
+                    </>
+                );
+            };
+
+            return (
+                <div className="container">
+                    <div className="header">
+                        <h1>🍽️ Restaurant Finder</h1>
+                        <p>Find restaurants with ratings, reviews, and contact information</p>
+                    </div>
+
+                    <div className="search-box">
+                        <div className="search-input-wrapper">
+                            <input
+                                type="text"
+                                className="search-input"
+                                placeholder="e.g., Istanbul restaurant, pizza near me..."
+                                value={query}
+                                onChange={(e) => setQuery(e.target.value)}
+                                onKeyPress={handleKeyPress}
+                            />
+                            <button 
+                                className="search-button"
+                                onClick={searchRestaurants}
+                                disabled={loading}
+                            >
+                                {loading ? 'Searching...' : 'Search'}
+                            </button>
+                        </div>
+                    </div>
+
+                    {error && (
+                        <div className="error-message">
+                            {error}
+                        </div>
+                    )}
+
+                    {loading && (
+                        <div className="loading">
+                            <div className="spinner"></div>
+                            <p>Searching restaurants...</p>
+                        </div>
+                    )}
+
+                    {!loading && restaurants.length > 0 && (
+                        <div className="results">
+                            {restaurants.map((restaurant, index) => (
+                                <div key={index} className="restaurant-card">
+                                    <div className="restaurant-name">
+                                        {restaurant.name}
+                                    </div>
+
+                                    <div className="info-row">
+                                        <div className="info-label">Rating:</div>
+                                        <div className="info-value">
+                                            <div className="rating-wrapper">
+                                                <span className="stars">
+                                                    {renderStars(restaurant.rating)}
+                                                </span>
+                                                {restaurant.totalRatings > 0 && (
+                                                    <span className="rating-count">
+                                                        ({restaurant.totalRatings} reviews)
+                                                    </span>
+                                                )}
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div className="info-row">
+                                        <div className="info-label">Phone:</div>
+                                        <div className="info-value">
+                                            {restaurant.phone !== 'N/A' ? (
+                                                <a href={`tel:${restaurant.phone}`}>{restaurant.phone}</a>
+                                            ) : (
+                                                'N/A'
+                                            )}
+                                        </div>
+                                    </div>
+
+                                    <div className="info-row">
+                                        <div className="info-label">Website:</div>
+                                        <div className="info-value">
+                                            {restaurant.website !== 'N/A' ? (
+                                                <a 
+                                                    href={restaurant.website} 
+                                                    target="_blank" 
+                                                    rel="noopener noreferrer"
+                                                    className="website-link"
+                                                >
+                                                    {restaurant.website.replace(/^https?:\/\//, '').substring(0, 40)}...
+                                                </a>
+                                            ) : (
+                                                'N/A'
+                                            )}
+                                        </div>
+                                    </div>
+
+                                    <div className="info-row">
+                                        <div className="info-label">Address:</div>
+                                        <div className="info-value">{restaurant.address}</div>
+                                    </div>
+
+                                    {restaurant.priceLevel !== 'N/A' && (
+                                        <div className="info-row">
+                                            <div className="info-label">Price:</div>
+                                            <div className="info-value">{restaurant.priceLevel}</div>
+                                        </div>
+                                    )}
+
+                                    {restaurant.isOpen !== null && (
+                                        <div className="info-row">
+                                            <div className="info-label">Status:</div>
+                                            <div className="info-value">
+                                                <span className={`open-status ${restaurant.isOpen ? 'open' : 'closed'}`}>
+                                                    {restaurant.isOpen ? 'Open Now' : 'Closed'}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {restaurant.reviews && restaurant.reviews.length > 0 && (
+                                        <div className="reviews-section">
+                                            <div className="reviews-title">Recent Reviews</div>
+                                            {restaurant.reviews.map((review, idx) => (
+                                                <div key={idx} className="review-item">
+                                                    <div className="review-header">
+                                                        <span className="review-author">{review.author}</span>
+                                                        <span className="review-rating">{'★'.repeat(review.rating)}</span>
+                                                    </div>
+                                                    <div className="review-text">
+                                                        {review.text.substring(0, 150)}
+                                                        {review.text.length > 150 && '...'}
+                                                    </div>
+                                                    <div className="review-time">{review.time}</div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
+                            ))}
+                        </div>
+                    )}
+
+                    {!loading && restaurants.length === 0 && !error && query && (
+                        <div className="no-results">
+                            No results to display. Try searching for something!
+                        </div>
+                    )}
+                </div>
+            );
+        }
+
+        ReactDOM.render(<RestaurantFinder />, document.getElementById('root'));
+    </script>
+</body>
+</html>
